@@ -9,6 +9,148 @@ editor: visual
 ### 2.6 Feature Engineering
 
 ```{r}
-score <- read.csv("https://github.com/bjpublic/R_data", 
-                  fileEncoding = "utf-8")
+score <- read.csv("~/Desktop/jieun/R/R practice/data/score.csv")
+
+# Creating new variable
+score$total = score$math + score$kor
+score$avg = (score$math + score$kor) / 2
+
+# Over 80 becomes PASS less than 80 becomes FAIL
+score$result = ifelse(score$avg > 80, "PASS", "FAIL")
+
+# Number of PASS and FAIL
+table(score$result)
+# by gender
+table(score$sex, score$result)
+
+# Check
+score
+```
+
+## 3. Exploratory Data Analysis
+
+3.  exploratory data analysis
+
+    ```{r}
+    install.packages("datasauRus")
+    library(datasauRus)
+    library(ggplot2)
+    library(dplyr)
+    dino <- datasaurus_dozen
+
+    datasaurus_dozen |> 
+      mutate(dataset = as.factor(dataset)) |> 
+      filter(dataset == "dino") |> 
+    ggplot(aes(x = x, y = y))+
+      geom_point() +
+      theme(legend.position = "none")+
+      labs(title = NULL) 
+    ```
+
+### 5. Cafe data
+
+```{r}
+install.packages("readxl")
+library(readxl)
+cafe <- read_xlsx("~/Desktop/jieun/R/R practice/data/Cafe_Sales.xlsx")
+
+# Check tail data
+tail(cafe)
+
+# Check NAs
+table(is.na(cafe$order_id))
+table(is.na(cafe$order_date))
+table(is.na(cafe$category))
+table(is.na(cafe$item))
+table(is.na(cafe$price))
+
+# Remove NAs
+cafe = na.omit(cafe)
+table(is.na(cafe))
+
+# head()
+head(cafe, n = 12)
+
+# We can find order number by using unique function because it is possible that one person ordered several things and unique function will let us know just how many unique person ordered in the cafe.
+nrow(cafe)
+length(unique(cafe$order_id))
+sort(unique(cafe$order_id), decreasing=TRUE)
+
+unique(cafe$order_date)
+unique(cafe$category)
+unique(cafe$item)
+unique(cafe$price)
+
+# Menu sales number
+sort(table(cafe$item), decreasing = TRUE)
+
+# New data.frame
+cafe_tr = data.frame(table(cafe$item))
+head(cafe_tr)
+
+sales_item = subset.data.frame(cafe, select = c("item", "price"))
+head(sales_item)
+sales_item = unique(sales_item)
+
+item_list = merge(cafe_tr, sales_item, by.x = "Var1", by.y = "item")
+head(item_list)
+
+item_list$amount = item_list$Freq * item_list$price
+head(item_list)
+sum(item_list$amount)
+
+# remove variable
+item_list <- item_list |> select(-amoung)
+
+# Making new variable of weekday
+cafe$weekday = weekdays(cafe$order_date)
+head(cafe)
+sort(table(cafe$weekday), decreasing = TRUE)
+
+# Separating weekday and weekend
+date_info = data.frame(weekday = c("Monday", "Tuesday", "Wednesday",
+                                   "Thursday", "Friday", "Saturday",
+                                   "Sunday"),
+                       day = c("weekday", "weekday", "weekday",
+                               "weekday", "weekday", "weekend",
+                               "weekend"))
+cafe = merge(cafe, date_info)
+table(cafe$day)
+
+# Season analysis
+cafe$month = months(cafe$order_date)
+
+for (i in 1:nrow(cafe)) {
+  if (cafe$month[i] == "January") {
+    cafe$season[i] = "winter"
+  } else if(cafe$month[i] == "February") {
+    cafe$season[i] = "winter"
+  } 
+  else if (cafe$month[i] == "March") {
+  cafe$season[i] = "spring"
+  } else if (cafe$month[i] == "April") {
+  cafe$season[i] = "spring"
+  } else if (cafe$month[i] == "May") {
+  cafe$season[i] = "spring"
+  }
+  else if (cafe$month[i] == "June") {
+    cafe$seaon[i] = "summer"
+  } else if (cafe$month[i] == "July") {
+    cafe$season[i] = "summer"
+  } else if (cafe$month[i] == "August") {
+    cafe$season[i] = "summer"
+  }
+  else if (cafe$month[i] == "September") {
+    cafe$season[i] = "fall"
+  } else if (cafe$month[i] == "November") {
+    cafe$season[i] = "fall"
+  } else if (cafe$month[i] == "December") {
+    cafe$season[i] = "fall"
+  }
+  else
+    cafe$season[i] = "winter"
+    }
+
+# Check
+cafe
 ```
