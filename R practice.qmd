@@ -9,7 +9,7 @@ editor: visual
 ### 2.6 Feature Engineering
 
 ```{r}
-score <- read.csv("~/Desktop/jieun/R/R practice/data/score.csv")
+score = read.csv("~/Desktop/jieun/R/R practice/data/score.csv")
 
 # Creating new variable
 score$total = score$math + score$kor
@@ -32,11 +32,11 @@ score
 3.  exploratory data analysis
 
     ```{r}
-    install.packages("datasauRus")
+    #install.packages("datasauRus")
     library(datasauRus)
     library(ggplot2)
     library(dplyr)
-    dino <- datasaurus_dozen
+    dino = datasaurus_dozen
 
     datasaurus_dozen |> 
       mutate(dataset = as.factor(dataset)) |> 
@@ -50,9 +50,9 @@ score
 ### 5. Cafe data
 
 ```{r}
-install.packages("readxl")
+#install.packages("readxl")
 library(readxl)
-cafe <- read_xlsx("~/Desktop/jieun/R/R practice/data/Cafe_Sales.xlsx")
+cafe = read_xlsx("~/Desktop/jieun/R/R practice/data/Cafe_Sales.xlsx")
 
 # Check tail data
 tail(cafe)
@@ -100,7 +100,7 @@ head(item_list)
 sum(item_list$amount)
 
 # remove variable
-item_list <- item_list |> select(-amoung)
+#item_list <- item_list |> select(-amoung)
 
 # Making new variable of weekday
 cafe$weekday = weekdays(cafe$order_date)
