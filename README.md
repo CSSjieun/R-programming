@@ -39,7 +39,7 @@ There are mainly three machine learning methods: supervised learning (Purpose of
    Mainly predict the uncoming event or issue using past data.
 
    It predict or estimate an output (response) from various inputs (predictors)
-   Statistical tools: better understanding about the relationship between the response and the predi tors (inference)
+   Statistical tools: better understanding about the relationship between the response and the predictors (inference)
    Maching learning tools: better (prediction accuracy)
    --> Most widely used tools: regression, classification, text analytics, recommendation systems, time series
 
