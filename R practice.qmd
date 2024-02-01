@@ -29,7 +29,7 @@ score
 
 ## 3. Exploratory Data Analysis
 
-3.  exploratory data analysis
+-   exploratory data analysis
 
     ```{r}
     #install.packages("datasauRus")
@@ -134,7 +134,7 @@ for (i in 1:nrow(cafe)) {
   cafe$season[i] = "spring"
   }
   else if (cafe$month[i] == "June") {
-    cafe$seaon[i] = "summer"
+    cafe$season[i] = "summer"
   } else if (cafe$month[i] == "July") {
     cafe$season[i] = "summer"
   } else if (cafe$month[i] == "August") {
