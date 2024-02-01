@@ -1,0 +1,14 @@
+---
+title: "R programming practice"
+format: html
+editor: visual
+---
+
+## Chapter 2
+
+### 2.6 Feature Engineering
+
+```{r}
+score <- read.csv("https://github.com/bjpublic/R_data", 
+                  fileEncoding = "utf-8")
+```
