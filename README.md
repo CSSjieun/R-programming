@@ -1,5 +1,5 @@
 # R-programming
-Resource github: http://github.com/bjpublic/R_data
+
 ## Chapter 1. Data Analysis and Data Cleaning
 ### 2.6 Feature Engineering
 Creating new variable using variables from the present dataset.
@@ -38,15 +38,26 @@ There are mainly three machine learning methods: supervised learning (Purpose of
    Supervised learning is a method of providing answers and training, and is used for classification models and regression models.
    Mainly predict the uncoming event or issue using past data.
 
+   It predict or estimate an output (response) from various inputs (predictors)
+   Statistical tools: better understanding about the relationship between the response and the predi tors (inference)
+   Maching learning tools: better (prediction accuracy)
+   --> Most widely used tools: regression, classification, text analytics, recommendation systems, time series
+
 2) Unsupervised Learning
    Unsupervised learning is a method of training without answers, and is used to explore data to find properties similar to the structure and classify them.
    For example, we can classify customers to one cluster who has similar buying pattern of specific products and accomplish the goal to increase the profit providing promotion to     
    induce the repurchase of the product (Cluster Analysis or Association Rule).
    We can use Principal Component Analysis or Kernel PCA to reduce the dimensionality of the data.
 
-4) Reinforcement Learning
+   Tools for understanding data, with no target attribute (no labels). Usually organize into some natural groups.
+   Difficult to know how well your are doing; useful as a pre-processing step for supervised learning.
+   --> Most widely used tools: PCA, clustering/segmentation, association rules
+
+3) Reinforcement Learning
    Training the agent to receive as many rewards as possible within a given environment by its action.
    For example, it is used to create AI players in the game industry or to develop autonomous driving in cars (ex. AlphaGo).
+
+4) Others: semi-supervised learning, optimization, simulation, . . .
 
 ### 4.3. Visualization
 Data visualization is the process of finding hidden patterns in the complex and disorderly flow of data and processing them concisely, clearly, and visually to convey them.
@@ -65,7 +76,19 @@ Lastly, we conclude by presenting future projects(or plans) on what projects wil
 > library("readxl")
 > read_xlsx()
 
-
+## References
+Resource github: http://github.com/bjpublic/R_data
+Advanced Modeling slides at UC3M Computation Social Science 2023/2024 academic year
+The book:
+• G. James, D. Witten, T. Hastie and R. Tibshirani.
+An Introduction to Statistical Learning with Applications in R second edition available here: https://www.statlearning.com
+Other references:
+• K. Murphy
+Machine Learning, A Probabilistic Perspective
+• David Spiegelhalter
+The Art of Statistics: Learning from Data
+• C. Bishop
+Pattern Recognition and Machine Learning
 
 
 
