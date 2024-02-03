@@ -149,7 +149,92 @@ for (i in 1:nrow(cafe)) {
     cafe$season[i] = "fall"
 }
 
-...
+### 5.5 Visualization
+geom_point() => point, scatter
+geom_line() => line
+geom_bar(stat="identity") => bar
+geom_col => bar
+geom_tile => tile bar
+geom_raster() => grid
+geom_text() => text expression
+geom_area() => area 
+geom_path() => order connection
+geom_polygon() => polygon
+geom_histogram() => histogram
+
+### theme
+theme_gray()
+theme_bw()
+theme_linedraw()
+theme_light()
+theme_dark()
+theme_minimal()
+theme_minimal()
+theme_classic()
+theme_void()
+
+### format of date
+cafe$date_ym = format(cafe$order_date, "%Y-%m")
+%Y - ex) 1990,2021
+%y - ex) 90, 21
+%y - month(01 - 12) ex) 02, 03
+%d - day(01 - 31) ex) 14, 22
+%w - day of the week(0 - 6) 0:sunday ex) 1
+%p - beforenoon/ afternoon ex) afternoon
+%H - time (00 - 23) ex) 23
+%I - time (00 - 12) ex) 11
+%M - minute (00 - 59) ex) 43
+%S - second (00 - 59) ex) 30
+
+## Chapter 6 The effect of the advertisement
+### Data description
+city 1: municipal
+city2: city
+age: age
+sex: sex
+type: A/B test group separation
+open: the number of email open
+click: the number of opening the shoppingmall website
+conversion: the number of purchase conversion
+saels: total price of sales
+
+### t-test
+H0: There will be no mean difference of click between two groups
+H1: There will be mean difference of click between two groups
+
+### raster package
+korea_sido = getData(name = "GADM", country = "kor", level = 1)
+GID_1: code of sido
+NAME_1: sido name in English 
+VARNAME_1: sido name in various language
+NL_NAME_1: sido name in Hanja
+TYPE_1: type of sido
+ENG_TYPE_1: sido type in Enlgish
+HASC_1: short type of sido code
+
+### Normality test
+sample < 5000, shapiro.test()
+sample => 5000, install.packages("nortest"), ad.test()
+
+H0) Group A follows a normal distribution.
+H1) Group A does not follow a normal distribution.
+
+### Homoscedasticity test
+normality yes - F-test
+normality no - Levene test
+
+install.packages("car")
+leveneTest(y = adver$open, group = factor(adver$type))
+
+H0) variation between groups are homogeneous
+H1) variation between groups are heterogeneous
+
+### conclusion
+It was difficult to say that there was a statistical difference between the two groups in the number of times the email was opened because there was no exposure to the advertising content, but it was confirmed that there was a statistical difference starting from the area where the advertising was actually exposed. In particular, in the case of the number of clicks and purchase conversions, it can be said that advertisements delivered to B_GROUP showed more positive results than advertisements delivered to A_GROUP. In this way, the t-test plays an important role in evaluating the performance of two groups and making statistical decisions.
+
+### fortify() function
+In R, fortify() is a function primarily associated with the ggplot2 package, although it can be used in other contexts as well.
+The purpose of fortify() is to convert data from a variety of formats into a data frame that can be used with ggplot2 for data visualization.
  
 ## References
 Resource github: http://github.com/bjpublic/R_data
