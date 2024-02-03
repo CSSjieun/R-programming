@@ -148,6 +148,8 @@ for (i in 1:nrow(cafe)) {
   } else
     cafe$season[i] = "fall"
 }
+
+...
  
 ## References
 Resource github: http://github.com/bjpublic/R_data
