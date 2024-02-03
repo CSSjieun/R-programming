@@ -72,10 +72,83 @@ Lastly, we conclude by presenting future projects(or plans) on what projects wil
 ## Chapter 2
 ### 5. What happened in the cafe for last 1 year.
 ### 5.1. readxl package
-> install.packages("readxl")
-> library("readxl")
-> read_xlsx()
+ install.packages("readxl")
+ library("readxl")
+ read_xlsx()
 
+ table(cafe$season)
+ --> fall: 24354, winter:13977, spring:10436, summer:13643
+ --> Relatively number of order in fall is high because data collection started from 2017.09(fall) to 2020.12(winter).
+ *We should consider this fact when we present the result of analysis.
+
+### Frequency of each item(beverage)
+cafe_tr = data.frame(table(cafe$item))
+### price & item
+cafe_item = subset.data.frame(cafe, select=c("item", "price"))
+### only one item and its price
+cafe_item = unique(cafe_item)
+### price of item, item, Frequ
+item_list = merge(cafe_tr, cafe_item, by.x="Var1", by.y="item")
+### Calculate the total saled price for each item
+item_list$amount = item_list$Freq * item_list$price
+sum(item_list$amount)
+
+### Weekend sales
+cafe$weekday = weekdays(cafe$order_date)
+date_info = data.frame(weekday = c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"),
+                      day = c("weekday", "weekday", "weekday", "weekday", "weekday", "weekend", "weekend"))
+cafe = merge(cafe, date_info)
+table(cafe$day)
+
+### Sesonal sales
+cafe$month = months(cafe$order_date)
+for (i in 1:nrow(cafe)) {
+  if (cafe$month[i] == "January") {
+    cafe$season[i] = "winter"
+  } else if(cafe$month[i] == "February") {
+    cafe$season[i] = "winter"
+  } 
+  else if (cafe$month[i] == "March") {
+  cafe$season[i] = "spring"
+  } else if (cafe$month[i] == "April") {
+  cafe$season[i] = "spring"
+  } else if (cafe$month[i] == "May") {
+  cafe$season[i] = "spring"
+  }
+  else if (cafe$month[i] == "June") {
+    cafe$season[i] = "summer"
+  } else if (cafe$month[i] == "July") {
+    cafe$season[i] = "summer"
+  } else if (cafe$month[i] == "August") {
+    cafe$season[i] = "summer"
+  }
+  else if (cafe$month[i] == "September") {
+    cafe$season[i] = "fall"
+  } else if (cafe$month[i] == "November") {
+    cafe$season[i] = "fall"
+  } else if (cafe$month[i] == "December") {
+    cafe$season[i] = "fall"
+  }
+  else
+    cafe$season[i] = "winter"
+}
+
+or
+
+for (i in 1:nrow(cafe)) {
+  if(cafe$month[i] == "December"|cafe$month[i] == "January"|
+     cafe$month[i] == "February") {
+    cafe$season[i] = "winter"
+  } else if(cafe$month[i] == "March"|cafe$month[i] == "April"|
+            cafe$month[i] == "May") {
+    cafe$season[i] = "spring"
+  } else if(cafe$month[i] == "June"|cafe$month[i] == "July"|
+            cafe$month[i] == "August") {
+    cafe$season[i] = "summer"
+  } else
+    cafe$season[i] = "fall"
+}
+ 
 ## References
 Resource github: http://github.com/bjpublic/R_data
 Advanced Modeling slides at UC3M Computation Social Science 2023/2024 academic year
