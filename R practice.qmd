@@ -647,6 +647,7 @@ sample_tesla |> ggplot(aes(x=date)) +
         axis.line.y.left = element_line(color = "grey"),
         plot.background = element_rect(fill = "white"),
         panel.background = element_rect(fill = "white"))
+
 ```
 
 ### Stat package
