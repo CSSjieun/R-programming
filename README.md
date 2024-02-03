@@ -235,6 +235,16 @@ It was difficult to say that there was a statistical difference between the two 
 ### fortify() function
 In R, fortify() is a function primarily associated with the ggplot2 package, although it can be used in other contexts as well.
 The purpose of fortify() is to convert data from a variety of formats into a data frame that can be used with ggplot2 for data visualization.
+
+## KOSPI (Korea Composite Stock Price Index) - time series data
+Seasonal: St, Trend-cycle: Tt, Remainder: Rt
+Addictive Model (when these three factors are independent each other): yt = St + Tt + Rt
+Multiplicative Model (when three factors are dependent each other): yt = St * Tt * Rt
+
+log Multiplicate Model --> Addictive Model format (easier to calculate)
+
+log(yt) = logSt + logTt + log Rt
+
  
 ## References
 Resource github: http://github.com/bjpublic/R_data
