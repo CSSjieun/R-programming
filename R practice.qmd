@@ -481,3 +481,176 @@ ggplot() +
   
 
 ```
+
+## Chapter 7
+
+```{r}
+install.packages("quantmod")
+library(quantmod)
+
+KOSPI = getSymbols("^KS11", from = "2001-01-01", to = Sys.time(), auto.assign = FALSE)
+
+SEC = getSymbols("005930.KS", from = "2015-01-01",
+                 to = Sys.time(), auto.assign = FALSE)
+
+APPLE = getSymbols("AAPL", from = "2015-01-01",
+                 to = Sys.time(), auto.assign = FALSE)
+
+TESLA = getSymbols("TSLA", from = "2015-01-01",
+                   tp = Sys.time(), auto.assign = FALSE)
+
+
+quantmod::chartSeries(SEC)
+
+#Change the xts timeseries data to data frame
+str(KOSPI)
+str(SEC)
+sample = data.frame(date = time(KOSPI), KOSPI, growth = ifelse(Cl(KOSPI) > Op(KOSPI), "up",
+                                                               "down"))
+sample_samsung = data.frame(date = time(SEC), SEC, 
+                            growth = ifelse(Cl(SEC) > Op(SEC), "up", "down"))
+
+sample_apple = data.frame(date = time(APPLE), APPLE, 
+                            growth = ifelse(Cl(APPLE) > Op(APPLE), "up", "down"))
+
+sample_tesla = data.frame(date = time(TESLA), TESLA, 
+                            growth = ifelse(Cl(TESLA) > Op(TESLA), "up", "down"))
+
+#Change the column name to make it simple
+colnames(KOSPI)
+colnames(sample) = c("date", "Open", "High", "Low", "Close", "Volume", "Adjusted", "growth")
+colnames(sample_samsung) = c("date", "Open", "High", "Low", "Close", "Volume", "Adjusted", "growth")
+colnames(sample_apple) = c("date", "Open", "High", "Low", "Close", "Volume", "Adjusted", "growth")
+colnames(sample_tesla) = c("date", "Open", "High", "Low", "Close", "Volume", "Adjusted", "growth")
+
+sample
+summary(sample)
+
+sample |> ggplot(aes(x=date)) + geom_line(aes(y = Low))
+sample[sample$date >= "2020-01-01",] |> ggplot(aes(x = date)) + geom_line(aes(y = Low))
+
+#linerange() will mark high and low price
+sample[sample$date >= "2020-01-01",] |> ggplot(aes(x=date)) +
+  geom_linerange(aes(ymin = Low, ymax = High))
+
+#geom_rect()
+sample[sample$date >= "2020-01-01",] |> ggplot(aes(x=date)) +
+  geom_linerange(aes(ymin = Low, ymax = High)) +
+  geom_rect(aes(xmin = date - 0.3,
+                xmax = date + 0.3,
+                ymin = pmin(Open, Close),
+                ymax = pmax(Open, Close),
+                fill = growth)) +
+  guides(fill = "none") +
+  scale_fill_manual(values = c("down" = "blue", "up" = "red")) +
+  labs(
+    title = "KOSPI",
+    subtitle = "From 2020-01-01 to 2024-02-03"
+  ) +
+  theme(plot.title = element_text(face = "bold"),
+        plot.subtitle = element_text(hjust = 1),
+        axis.title = element_blank(),
+        axis.line.x.bottom = element_line(color = "grey"),
+        axis.ticks = element_line(color = "grey"),
+        axis.line.y.left = element_line(color = "grey"),
+        plot.background = element_rect(fill = "white"),
+        panel.background = element_rect(fill = "white"))
+
+sample|> ggplot(aes(x=date)) +
+  geom_linerange(aes(ymin = Low, ymax = High)) +
+  geom_rect(aes(xmin = date - 0.3,
+                xmax = date + 0.3,
+                ymin = pmin(Open, Close),
+                ymax = pmax(Open, Close),
+                fill = growth)) +
+  guides(fill = "none") +
+  scale_fill_manual(values = c("down" = "blue", "up" = "red")) +
+  labs(
+    title = "KOSPI",
+    subtitle = "From 2020-01-01 to 2024-02-03"
+  ) +
+  theme(plot.title = element_text(face = "bold"),
+        plot.subtitle = element_text(hjust = 1),
+        axis.title = element_blank(),
+        axis.line.x.bottom = element_line(color = "grey"),
+        axis.ticks = element_line(color = "grey"),
+        axis.line.y.left = element_line(color = "grey"),
+        plot.background = element_rect(fill = "white"),
+        panel.background = element_rect(fill = "white"))
+
+
+#SAMSUNG 
+sample_samsung |> ggplot(aes(x=date)) +
+  geom_linerange(aes(ymin = Low, ymax = High)) +
+  geom_rect(aes(xmin = date - 0.3,
+                xmax = date + 0.3,
+                ymin = pmin(Open, Close),
+                ymax = pmax(Open, Close),
+                fill = growth)) +
+  guides(fill = "none") +
+  scale_fill_manual(values = c("down" = "blue", "up" = "red")) +
+  labs(
+    title = "SAMSUNG",
+    subtitle = "From 2015-01-02 to 2024-02-03"
+  ) +
+  theme(plot.title = element_text(face = "bold"),
+        plot.subtitle = element_text(hjust = 1),
+        axis.title = element_blank(),
+        axis.line.x.bottom = element_line(color = "grey"),
+        axis.ticks = element_line(color = "grey"),
+        axis.line.y.left = element_line(color = "grey"),
+        plot.background = element_rect(fill = "white"),
+        panel.background = element_rect(fill = "white"))
+
+#APPLE
+sample_apple |> ggplot(aes(x=date)) +
+  geom_linerange(aes(ymin = Low, ymax = High)) +
+  geom_rect(aes(xmin = date - 0.3,
+                xmax = date + 0.3,
+                ymin = pmin(Open, Close),
+                ymax = pmax(Open, Close),
+                fill = growth)) +
+  guides(fill = "none") +
+  scale_fill_manual(values = c("down" = "blue", "up" = "red")) +
+  labs(
+    title = "APPLE",
+    subtitle = "From 2015-01-02 to 2024-02-03"
+  ) +
+  theme(plot.title = element_text(face = "bold"),
+        plot.subtitle = element_text(hjust = 1),
+        axis.title = element_blank(),
+        axis.line.x.bottom = element_line(color = "grey"),
+        axis.ticks = element_line(color = "grey"),
+        axis.line.y.left = element_line(color = "grey"),
+        plot.background = element_rect(fill = "white"),
+        panel.background = element_rect(fill = "white"))
+
+#TESLA
+sample_tesla |> ggplot(aes(x=date)) +
+  geom_linerange(aes(ymin = Low, ymax = High)) +
+  geom_rect(aes(xmin = date - 0.3,
+                xmax = date + 0.3,
+                ymin = pmin(Open, Close),
+                ymax = pmax(Open, Close),
+                fill = growth)) +
+  guides(fill = "none") +
+  scale_fill_manual(values = c("down" = "blue", "up" = "red")) +
+  labs(
+    title = "TESLA",
+    subtitle = "From 2015-01-02 to 2024-02-03"
+  ) +
+  theme(plot.title = element_text(face = "bold"),
+        plot.subtitle = element_text(hjust = 1),
+        axis.title = element_blank(),
+        axis.line.x.bottom = element_line(color = "grey"),
+        axis.ticks = element_line(color = "grey"),
+        axis.line.y.left = element_line(color = "grey"),
+        plot.background = element_rect(fill = "white"),
+        panel.background = element_rect(fill = "white"))
+```
+
+### Stat package
+
+```{r}
+
+```
