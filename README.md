@@ -186,7 +186,7 @@ cafe$date_ym = format(cafe$order_date, "%Y-%m")
 %M - minute (00 - 59) ex) 43
 %S - second (00 - 59) ex) 30
 
-## Chapter 6 The effect of the advertisement
+## Chapter 6. The effect of the advertisement
 ### Data description
 city 1: municipal
 city2: city
@@ -236,7 +236,7 @@ It was difficult to say that there was a statistical difference between the two 
 In R, fortify() is a function primarily associated with the ggplot2 package, although it can be used in other contexts as well.
 The purpose of fortify() is to convert data from a variety of formats into a data frame that can be used with ggplot2 for data visualization.
 
-## KOSPI (Korea Composite Stock Price Index) - time series data
+## Chapter 7. KOSPI (Korea Composite Stock Price Index) - time series data
 Seasonal: St, Trend-cycle: Tt, Remainder: Rt
 Addictive Model (when these three factors are independent each other): yt = St + Tt + Rt
 Multiplicative Model (when three factors are dependent each other): yt = St * Tt * Rt
@@ -244,6 +244,46 @@ Multiplicative Model (when three factors are dependent each other): yt = St * Tt
 log Multiplicate Model --> Addictive Model format (easier to calculate)
 
 log(yt) = logSt + logTt + log Rt
+
+data from: Yahoo Finance
+install.packages("quantmod")
+
+### forecast package: time-series regression model
+ts_data = ts(data = as.numeric(KOSPI_NEW$KS11.Close), frequency = 4)
+
+library(forecast)
+fit_lm = tslm(ts_data ~ trend)
+
+pred = data.frame(forecast(fit_lm, h = 20), stringsAsFactors = FALSE)
+pred |> ggplot(aes(x= index(pred), y = Point.Forecast)) +
+  geom_line() +
+  geom_ribbon(aes(ymin = Lo.95, ymax = Hi.95), alpha = 0.25) +
+  geom_ribbon(aes(ymin = Lo.80, ymax = Hi.80), alpha = 0.5)
+
+ts_data_B = ts(data = as.numeric(KOSPI_NEW$KS11.Close), frequency = 12)
+fitted = tslm(ts_data_B ~ trend + season)
+
+### Dummy variable t
+t = time(ts_data_B)
+t.break = data.frame(t, ts_data_B)
+t.break[t.break$t < 3.65, ] = 0
+t.break[t.break$t > 3.75, ] = 0
+tb1 = ts(t.break$t, frequency = 20)
+
+fit.t = tslm(ts_data_B ~ t)
+AIC(fit.t)
+
+### Utilizes quadratic functions to fit nonlinear trends.
+fit.tb = tslm(ts_data_B ~ t + I(t^2) + I(t^3) + I(tb1^3))
+AIC(fit.tb)
+
+ts_data_B |> ggplot(aes(x = time(ts_data_B))) +
+  geom_line(aes(y = ts_data)) +
+  geom_line(aes(y = fit.t$fitted.values),
+            color = "yellow", size = 1) +
+  geom_line(aes(y = fit.tb$fitted.values), 
+            color = "blue")
+
 
  
 ## References

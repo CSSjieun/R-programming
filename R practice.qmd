@@ -25,6 +25,7 @@ table(score$sex, score$result)
 
 # Check
 score
+
 ```
 
 ## 3. Exploratory Data Analysis
@@ -653,5 +654,373 @@ sample_tesla |> ggplot(aes(x=date)) +
 ### Stat package
 
 ```{r}
+library(quantmod)
+KOSPI_B = getSymbols("^KS11", from = "2001-01-01", 
+                   to = Sys.time(), 
+                   auto.assign = FALSE)
+
+str(KOSPI_B)
+colnames(KOSPI_B) = c("Open", "High", "Low", "Close", "Volume", "Adjusted")
+
+table(is.na(KOSPI_B))
+
+#Making the time-series data
+KOSPI_C = na.omit(KOSPI_B$Close)
+KOSPI_C = as.numeric(KOSPI_C)
+ts_KOSPI_C = ts(data = KOSPI_C, frequency = 365)
+
+#Additive and Multiplicative model
+de_data_add = decompose(ts_KOSPI_C, type = "additive")
+de_data_multi = decompose(ts_KOSPI_C, type = "multiplicative")
+
+str(de_data_add)
+str(de_data_multi)
+
+plot(de_data_add)
+plot(de_data_multi)
+```
+
+### forecast package
+
+```{r}
+KOSPI_NEW = getSymbols("^KS11", from = "2023-01-01", to ="2024-01-31", auto.assign = FALSE)
+head(KOSPI_NEW)
+
+KOSPI_NEW |> ggplot(aes(x = time(KOSPI_NEW), y = KS11.Close)) + geom_line()
+
+ts_data = ts(data = as.numeric(KOSPI_NEW$KS11.Close), frequency = 4)
+
+install.packages("forecast")
+library(forecast)
+fit_lm = tslm(ts_data ~ trend)
+fit_lm
+
+summary(fit_lm)
+
+KOSPI_NEW |> ggplot(aes(x = time(KOSPI_NEW), y = KS11.Close)) +
+  geom_line() +
+  geom_line(y = fit_lm$fitted.values, color = "grey")
+
+pred = data.frame(forecast(fit_lm, h = 20), stringsAsFactors = FALSE)
+pred |> ggplot(aes(x= index(pred), y = Point.Forecast)) +
+  geom_line() +
+  geom_ribbon(aes(ymin = Lo.95, ymax = Hi.95), alpha = 0.25) +
+  geom_ribbon(aes(ymin = Lo.80, ymax = Hi.80), alpha = 0.5)
+```
+
+```{r}
+ts_data_B = ts(data = as.numeric(KOSPI_NEW$KS11.Close), frequency = 12)
+fitted = tslm(ts_data_B ~ trend + season)
+fitted
+summary(fitted)
+
+KOSPI_NEW |> ggplot(aes(x = time(KOSPI_NEW), y = KS11.Close)) +
+  geom_line() +
+  geom_line(y = fitted$fitted.values, color = "grey")
+
+
+```
+
+```{r}
+t = time(ts_data_B)
+t.break = data.frame(t, ts_data_B)
+t.break[t.break$t < 3.65, ] = 0
+t.break[t.break$t > 3.75, ] = 0
+tb1 = ts(t.break$t, frequency = 20)
+
+fit.t = tslm(ts_data_B ~ t)
+AIC(fit.t)
+
+fit.tb = tslm(ts_data_B ~ t + I(t^2) + I(t^3) + I(tb1^3))
+AIC(fit.tb)
+
+ts_data_B |> ggplot(aes(x = time(ts_data_B))) +
+  geom_line(aes(y = ts_data)) +
+  geom_line(aes(y = fit.t$fitted.values),
+            color = "yellow", size = 1) +
+  geom_line(aes(y = fit.tb$fitted.values), 
+            color = "blue") +
+    guides(fill = "none") +
+  labs(
+    title = "Time-series regression model",
+    subtitle = "From 2023-01-01 to 2024-01-31"
+  ) +
+  theme(plot.title = element_text(face = "bold"),
+        plot.subtitle = element_text(hjust = 1),
+        axis.title = element_blank(),
+        axis.line.x.bottom = element_line(color = "grey"),
+        axis.ticks = element_line(color = "grey"),
+        axis.line.y.left = element_line(color = "grey"),
+        plot.background = element_rect(fill = "white"),
+        panel.background = element_rect(fill = "white"))
+
+new = data.frame(t = t[length(t)] + seq(1, by=0.05, length.out = 20))
+forecast(fit.t, newdata = new)
+```
+
+### Unit Root Test
+
+```{r}
+install.packages("urca")
+library(urca)
+ts_kospi = ts(as.numeric(KOSPI_NEW$KS11.Close), frequency = 20)
+
+ur_test = ur.kpss(ts_kospi)
+summary(ur_test)
+
+#Since test-statistic is 0.8152 it is bigger than 0.05 and it needs differencing
+dif_1 = diff(ts_kospi, differences = 1)
+ur_test_2 = ur.kpss(dif_1)
+summary(ur_test_2)
+
+#One more differencing since test-statistic is 0.1912 > 0.05
+dif_2 = diff(ts_kospi, differences = 2)
+ur_test_3 = ur.kpss(dif_2)
+summary(ur_test_3)
+
+#If one more differencing is needed then we can use log transformation
+log_dif_2 = diff(log(ts_kospi), differences = 2)
+ur_test_4 = ur.kpss(log_dif_2)
+summary(ur_test_4)
+```
+
+### auto.arima
+
+```{r}
+library(ggplot2)
+ts_kospi |> ggplot(aes(x = time(ts_kospi))) +
+  geom_line(aes(y = ts_kospi))
+
+
+library(forecast)
+fit_a = auto.arima(ts_kospi)
+fit_a
+checkresiduals(fit_a)
+```
+
+## Chapter 8. News keyword analysis
+
+```{r}
+library(httr)
+news = GET(url = "https://openapi.naver.com/v1/search/news.json",
+           add_headers("X-Naver-Client-Id" = cID,
+                       "X-Naver-Client-Secret" = cSec),
+           query = list(query = "Madrid",
+                        display = 100,
+                        start = 1,
+                        sort = "date"))
+
+content(news)$total
+
+install.packages("rJava")
+library(rJava)
+source("https://install-github.me/talgalili/installr")
+installr::install.java()
+
+install.packages("remote")
+library(remote)
+remotes::install_github("haven-jeon/KoNLP",
+                        upgrade = "never",
+                        INSTALL_opts = c("--no-multiarch"))
+library(KoNLP)
+
+```
+
+### News about electric car
+
+```{r}
+library(httr)
+url = "https://openapi.naver.com/v1/search/news.json"
+sample_news = GET(url = url,
+                  add_headers("X-Naver-Client-Id" = cID,
+                              "X-Naver-Client-Secret" = cSEC),
+                  query = list(query = "전기자동차",
+                               display = 1,
+                               start = 1,
+                               sort = "date"))
+content(sample_news)$total
+
+#Creating empty data.frame
+all_news = data.frame()
+all_news
+
+URL = "https://openapi.naver.com/v1/search/news.json"
+search = "전기자동차"
+for(i in 1:10){
+  param = list(query = search,
+               display = 100,
+               start = i,
+               sort = "date")
+  
+  news = GET(url = URL,
+             add_headers("X-Naver-Client-Id" = cID,
+                         "X-Naver-Client-Secret" = cSEC),
+             query = param)
+  
+  body = data.frame(t(sapply(content(news)$item, data.frame)))
+  all_news = rbind(all_news, body)
+  Sys.sleep(0.1)
+}
+
+
+all_news 
+
+#print only the title
+all_news$title[1:10]
+pat = "<b>|</b>|&quot;"
+rep = ""
+title = gsub(pattern = pat, replacement = rep, x = all_news$title)
+
+#different way to remove the words
+pat2 <- c(
+  "<b>",
+  "</b>",
+  "&quot;",
+  "1", 
+  "150", 
+  "10",
+  "1.5",
+  "12",
+  "137",
+  "11",
+  "100",
+  "14"
+)
+
+wrong_labels_pat2 <- paste0(pat2, collapse = "|")
+wrong_labels_pat2
+
+library(dplyr)
+library(stringr)
+all_news_semi_cleaned <-
+  all_news %>%
+  mutate(
+    title = str_replace_all(string = title, pattern = wrong_labels_pat2, 
+                            replacement = "")
+  ) 
+
+head(all_news_semi_cleaned, 10)
+
+install.packages("tidytext")
+library(tidytext)
+
+title = tibble(text = all_news_semi_cleaned$title)
+
+noun_list = title |> unnest_tokens(word, text)
+tb_noun = table(noun_list)
+length(tb_noun)
+head(tb_noun)
+
+df_noun = data.frame(tb_noun)
+top10_noun = head(df_noun, 10)
+
+ggplot(top10_noun) + geom_bar(aes(x = reorder(word, -Freq), y = Freq), stat = "identity")
+
+str(df_noun)
+df_noun$word = as.character(df_noun$word)
+df_noun = df_noun[nchar(df_noun$word) > 1,]
+top10_noun = head(df_noun, 10)
+
+top10_noun |> ggplot() + geom_bar(aes(x=reorder(word, -Freq), y=Freq), stat = "identity")
+```
+
+### word cloud
+
+```{r}
+install.packages("wordcloud")
+library(wordcloud)
+library(RcolorBrewer)
+
+remove_word = c(
+  "<b>",
+  "</b>",
+  "&quot;",
+  "Q&amp;A"
+  )
+remove_word = paste0(remove_word, collapse = "|")
+
+title = all_news_semi_cleaned |>  mutate(title = str_replace_all(string = title, pattern = remove_word, replacement = ""))
+head(title, 10)
+
+title = tibble(text = all_news_semi_cleaned$title)
+noun_list = title |> unnest_tokens(word, text)
+tb_noun = table(noun_list)
+df_noun = data.frame(tb_noun)
+
+wordcloud(words = df_noun$word,
+          freq = df_noun$Freq)
+
+wordcloud(words = df_noun$word,
+          freq = df_noun$Freq,
+          random.order = FALSE,
+          min.freq = 20,
+          colors = brewer.pal(8, "Dark2"))
+
+#wordcloud2 package
+install.packages("wordcloud2")
+library(wordcloud2)
+wordcloud2(data = df_noun,
+           color = "random-dark",
+           shape = "circle",
+           fontFamily = "Arial",
+           fontWeight = 550,
+           size = 2,
+           widgetsize = c(900, 500))
+
+letterCloud(data = df_noun, "R", wordSize = 1)
+
+#Analysis by graph
+all_news = data.frame()
+all_news
+
+URL = "https://openapi.naver.com/v1/search/news.json"
+search = "전기자동차"
+for(i in 1:10){
+  param = list(query = search,
+               display = 100,
+               start = i,
+               sort = "sim")
+  
+  news = GET(url = URL,
+             add_headers("X-Naver-Client-Id" = cid,
+                         "X-Naver-Client-Secret" = cSec),
+             query = param)
+  
+  body = data.frame(t(sapply(content(news)$item, data.frame)))
+  all_news = rbind(all_news, body)
+  Sys.sleep(0.1)
+}
+
+format(Sys.time(), "%Y-%m-%d %a")
+Sys.setlocale(category = "LC_TIME",
+              locale = "C")
+all_news$pubDate = as.Date(unlist(all_news$pubDate), "%a, %d %b %Y")
+
+ggplot(all_news, aes(x=pubDate)) +
+  geom_line(stat = "count", color = "#EEEEEE", size = 1.5) +
+  geom_text(aes(label = ..count..),
+            stat = "count",
+            position = position_nudge(y = 150)) +
+  labs(title = "Electric Car News Trend") +
+  xlab("date") +
+  ylab("") +
+  scale_x_date(date_labels = "%m-%d") +
+  theme(text = element_text(size = 15),
+        panel.background = element_blank(),
+        axis.ticks = element_blank(),
+        title = element_text(size = 13, face = "bold"))
+
+top = data.frame(1:10)
+for(i in 1:length(unique(all_news$pubDate))){
+   sub_news = all_news[all_news$pubDate==sort(unique(all_news$pubDate))[i],] +   
+   df_target = data.frame(table(unlist(strsplit(sub_news$title, " "))))
+   df_target = df_target[order(df_target$Freq, decreasing = TRUE),]
+   df_target$Var1 = as.character(df_target$Var1)
+   df_target = df_target[nchar(df_target$Var1) > 1,]
+
+   top10 = head(df_target, 10)
+
+   top = cbind(top, top10)
+}
 
 ```
