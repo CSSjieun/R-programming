@@ -72,9 +72,11 @@ Lastly, we conclude by presenting future projects(or plans) on what projects wil
 ## Chapter 2
 ### 5. What happened in the cafe for last 1 year.
 ### 5.1. readxl package
+```R
  install.packages("readxl")
  library("readxl")
  read_xlsx()
+```
 
  table(cafe$season)
  --> fall: 24354, winter:13977, spring:10436, summer:13643
