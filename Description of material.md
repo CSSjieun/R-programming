@@ -196,7 +196,9 @@ theme_void()
 ```
 
 ### format of date
+```R
 cafe$date_ym = format(cafe$order_date, "%Y-%m")
+```
 %Y - ex) 1990,2021
 %y - ex) 90, 21
 %y - month(01 - 12) ex) 02, 03
