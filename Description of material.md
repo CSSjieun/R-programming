@@ -200,14 +200,23 @@ theme_void()
 cafe$date_ym = format(cafe$order_date, "%Y-%m")
 ```
 %Y - ex) 1990,2021
+
 %y - ex) 90, 21
+
 %y - month(01 - 12) ex) 02, 03
+
 %d - day(01 - 31) ex) 14, 22
+
 %w - day of the week(0 - 6) 0:sunday ex) 1
+
 %p - beforenoon/ afternoon ex) afternoon
+
 %H - time (00 - 23) ex) 23
+
 %I - time (00 - 12) ex) 11
+
 %M - minute (00 - 59) ex) 43
+
 %S - second (00 - 59) ex) 30
 
 
