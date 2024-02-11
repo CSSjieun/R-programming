@@ -172,8 +172,8 @@ for (i in 1:nrow(cafe)) {
 geom_point() => point, scatter
 geom_line() => line
 geom_bar(stat="identity") => bar
-geom_col => bar
-geom_tile => tile bar
+geom_col() => bar
+geom_tile() => tile bar
 geom_raster() => grid
 geom_text() => text expression
 geom_area() => area 
@@ -196,7 +196,6 @@ theme_void()
 ```
 
 ### format of date
-```R
 cafe$date_ym = format(cafe$order_date, "%Y-%m")
 %Y - ex) 1990,2021
 %y - ex) 90, 21
@@ -208,11 +207,10 @@ cafe$date_ym = format(cafe$order_date, "%Y-%m")
 %I - time (00 - 12) ex) 11
 %M - minute (00 - 59) ex) 43
 %S - second (00 - 59) ex) 30
-```
+
 
 ## Chapter 6. The effect of the advertisement
 ### Data description
-```R
 city 1: municipal
 city2: city
 age: age
@@ -222,17 +220,17 @@ open: the number of email open
 click: the number of opening the shoppingmall website
 conversion: the number of purchase conversion
 saels: total price of sales
-```
+
 
 ### t-test
-```R
 H0: There will be no mean difference of click between two groups
 H1: There will be mean difference of click between two groups
-```
+
 
 ### raster package
 ```R
 korea_sido = getData(name = "GADM", country = "kor", level = 1)
+```
 GID_1: code of sido
 NAME_1: sido name in English 
 VARNAME_1: sido name in various language
@@ -240,7 +238,7 @@ NL_NAME_1: sido name in Hanja
 TYPE_1: type of sido
 ENG_TYPE_1: sido type in Enlgish
 HASC_1: short type of sido code
-```
+
 
 ### Normality test
 sample < 5000, shapiro.test()
