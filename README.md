@@ -29,7 +29,7 @@ Chapter 9. Sentiment analysis using Youtube comment keywords.
 - Google API project creation <br/>
 - Linking Google OAuth permissions 
 
-Chapter 10. Building a thesis analysis system using R packages. 
+Chapter 10. Building athesis analysis system using R packages. 
 
 
 ## References
