@@ -77,32 +77,47 @@ Lastly, we conclude by presenting future projects(or plans) on what projects wil
  library("readxl")
  read_xlsx()
 ```
-
+```R
  table(cafe$season)
+```
  --> fall: 24354, winter:13977, spring:10436, summer:13643
  --> Relatively number of order in fall is high because data collection started from 2017.09(fall) to 2020.12(winter).
  *We should consider this fact when we present the result of analysis.
 
+
 ### Frequency of each item(beverage)
+```R
 cafe_tr = data.frame(table(cafe$item))
+```
 ### price & item
+```R
 cafe_item = subset.data.frame(cafe, select=c("item", "price"))
+```
 ### only one item and its price
+```R
 cafe_item = unique(cafe_item)
-### price of item, item, Frequ
+```
+### price of item, item, Freq
+```R
 item_list = merge(cafe_tr, cafe_item, by.x="Var1", by.y="item")
+```
 ### Calculate the total saled price for each item
+```R
 item_list$amount = item_list$Freq * item_list$price
 sum(item_list$amount)
+```
 
 ### Weekend sales
+```R
 cafe$weekday = weekdays(cafe$order_date)
 date_info = data.frame(weekday = c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"),
                       day = c("weekday", "weekday", "weekday", "weekday", "weekday", "weekend", "weekend"))
 cafe = merge(cafe, date_info)
 table(cafe$day)
+```
 
 ### Sesonal sales
+```R
 cafe$month = months(cafe$order_date)
 for (i in 1:nrow(cafe)) {
   if (cafe$month[i] == "January") {
@@ -150,8 +165,10 @@ for (i in 1:nrow(cafe)) {
   } else
     cafe$season[i] = "fall"
 }
+```
 
 ### 5.5 Visualization
+```R
 geom_point() => point, scatter
 geom_line() => line
 geom_bar(stat="identity") => bar
@@ -163,8 +180,10 @@ geom_area() => area
 geom_path() => order connection
 geom_polygon() => polygon
 geom_histogram() => histogram
+```
 
 ### theme
+```R
 theme_gray()
 theme_bw()
 theme_linedraw()
@@ -174,8 +193,10 @@ theme_minimal()
 theme_minimal()
 theme_classic()
 theme_void()
+```
 
 ### format of date
+```R
 cafe$date_ym = format(cafe$order_date, "%Y-%m")
 %Y - ex) 1990,2021
 %y - ex) 90, 21
@@ -187,9 +208,11 @@ cafe$date_ym = format(cafe$order_date, "%Y-%m")
 %I - time (00 - 12) ex) 11
 %M - minute (00 - 59) ex) 43
 %S - second (00 - 59) ex) 30
+```
 
 ## Chapter 6. The effect of the advertisement
 ### Data description
+```R
 city 1: municipal
 city2: city
 age: age
@@ -199,12 +222,16 @@ open: the number of email open
 click: the number of opening the shoppingmall website
 conversion: the number of purchase conversion
 saels: total price of sales
+```
 
 ### t-test
+```R
 H0: There will be no mean difference of click between two groups
 H1: There will be mean difference of click between two groups
+```
 
 ### raster package
+```R
 korea_sido = getData(name = "GADM", country = "kor", level = 1)
 GID_1: code of sido
 NAME_1: sido name in English 
@@ -213,6 +240,7 @@ NL_NAME_1: sido name in Hanja
 TYPE_1: type of sido
 ENG_TYPE_1: sido type in Enlgish
 HASC_1: short type of sido code
+```
 
 ### Normality test
 sample < 5000, shapiro.test()
@@ -225,8 +253,10 @@ H1) Group A does not follow a normal distribution.
 normality yes - F-test
 normality no - Levene test
 
+```R
 install.packages("car")
 leveneTest(y = adver$open, group = factor(adver$type))
+```
 
 H0) variation between groups are homogeneous
 H1) variation between groups are heterogeneous
@@ -248,9 +278,12 @@ log Multiplicate Model --> Addictive Model format (easier to calculate)
 log(yt) = logSt + logTt + log Rt
 
 data from: Yahoo Finance
+```R
 install.packages("quantmod")
+```
 
 ### forecast package: time-series regression model
+```R
 ts_data = ts(data = as.numeric(KOSPI_NEW$KS11.Close), frequency = 4)
 
 library(forecast)
@@ -264,8 +297,10 @@ pred |> ggplot(aes(x= index(pred), y = Point.Forecast)) +
 
 ts_data_B = ts(data = as.numeric(KOSPI_NEW$KS11.Close), frequency = 12)
 fitted = tslm(ts_data_B ~ trend + season)
+```
 
 ### Dummy variable t
+```R
 t = time(ts_data_B)
 t.break = data.frame(t, ts_data_B)
 t.break[t.break$t < 3.65, ] = 0
@@ -274,8 +309,10 @@ tb1 = ts(t.break$t, frequency = 20)
 
 fit.t = tslm(ts_data_B ~ t)
 AIC(fit.t)
+```
 
 ### Utilizes quadratic functions to fit nonlinear trends.
+```R
 fit.tb = tslm(ts_data_B ~ t + I(t^2) + I(t^3) + I(tb1^3))
 AIC(fit.tb)
 
@@ -285,7 +322,7 @@ ts_data_B |> ggplot(aes(x = time(ts_data_B))) +
             color = "yellow", size = 1) +
   geom_line(aes(y = fit.tb$fitted.values), 
             color = "blue")
-
+```
 
  
 ## References
