@@ -1164,3 +1164,7 @@ nrow(cmt_2)
 ```
 
 ### RcppMecab Package
+
+```{r}
+
+```
