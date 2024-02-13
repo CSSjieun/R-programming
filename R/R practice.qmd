@@ -1,0 +1,1170 @@
+---
+title: "R programming practice"
+format: html
+editor: visual
+---
+
+## Chapter 2
+
+### 2.6 Feature Engineering
+
+```{r}
+score = read.csv("~/Desktop/jieun/R/R practice/data/score.csv")
+
+# Creating new variable
+score$total = score$math + score$kor
+score$avg = (score$math + score$kor) / 2
+
+# Over 80 becomes PASS less than 80 becomes FAIL
+score$result = ifelse(score$avg > 80, "PASS", "FAIL")
+
+# Number of PASS and FAIL
+table(score$result)
+# by gender
+table(score$sex, score$result)
+
+# Check
+score
+
+```
+
+## 3. Exploratory Data Analysis
+
+-   exploratory data analysis
+
+    ```{r}
+    #install.packages("datasauRus")
+    library(datasauRus)
+    library(ggplot2)
+    library(dplyr)
+    dino = datasaurus_dozen
+
+    datasaurus_dozen |> 
+      mutate(dataset = as.factor(dataset)) |> 
+      filter(dataset == "dino") |> 
+    ggplot(aes(x = x, y = y))+
+      geom_point() +
+      theme(legend.position = "none")+
+      labs(title = NULL) 
+    ```
+
+### 5. Cafe data
+
+```{r}
+#install.packages("readxl")
+library(readxl)
+cafe = read_xlsx("~/Desktop/jieun/R/R practice/data/Cafe_Sales.xlsx")
+
+# Check tail data
+tail(cafe)
+
+# Check NAs
+table(is.na(cafe$order_id))
+table(is.na(cafe$order_date))
+table(is.na(cafe$category))
+table(is.na(cafe$item))
+table(is.na(cafe$price))
+
+# Remove NAs
+cafe = na.omit(cafe)
+table(is.na(cafe))
+
+# head()
+head(cafe, n = 12)
+
+# We can find order number by using unique function because it is possible that one person ordered several things and unique function will let us know just how many unique person ordered in the cafe.
+nrow(cafe)
+length(unique(cafe$order_id))
+sort(unique(cafe$order_id), decreasing=TRUE)
+
+unique(cafe$order_date)
+unique(cafe$category)
+unique(cafe$item)
+unique(cafe$price)
+
+# Menu sales number
+sort(table(cafe$item), decreasing = TRUE)
+
+# New data.frame
+cafe_tr = data.frame(table(cafe$item))
+head(cafe_tr)
+
+cafe_item = subset.data.frame(cafe, select = c("item", "price"))
+head(cafe_item)
+sales_item = unique(cafe_item)
+
+item_list = merge(cafe_tr, cafe_item, by.x = "Var1", by.y = "item")
+head(item_list)
+
+item_list$amount = item_list$Freq * item_list$price
+head(item_list)
+sum(item_list$amount)
+
+# remove variable
+#item_list <- item_list |> select(-amoung)
+
+# Making new variable of weekday
+cafe$weekday = weekdays(cafe$order_date)
+head(cafe)
+sort(table(cafe$weekday), decreasing = TRUE)
+
+# Separating weekday and weekend
+date_info = data.frame(weekday = c("Monday", "Tuesday", "Wednesday",
+                                   "Thursday", "Friday", "Saturday",
+                                   "Sunday"),
+                       day = c("weekday", "weekday", "weekday",
+                               "weekday", "weekday", "weekend",
+                               "weekend"))
+cafe = merge(cafe, date_info)
+table(cafe$day)
+
+# Season analysis
+cafe$month = months(cafe$order_date)
+
+for (i in 1:nrow(cafe)) {
+  if (cafe$month[i] == "January") {
+    cafe$season[i] = "winter"
+  } else if(cafe$month[i] == "February") {
+    cafe$season[i] = "winter"
+  } 
+  else if (cafe$month[i] == "March") {
+  cafe$season[i] = "spring"
+  } else if (cafe$month[i] == "April") {
+  cafe$season[i] = "spring"
+  } else if (cafe$month[i] == "May") {
+  cafe$season[i] = "spring"
+  }
+  else if (cafe$month[i] == "June") {
+    cafe$season[i] = "summer"
+  } else if (cafe$month[i] == "July") {
+    cafe$season[i] = "summer"
+  } else if (cafe$month[i] == "August") {
+    cafe$season[i] = "summer"
+  }
+  else if (cafe$month[i] == "September") {
+    cafe$season[i] = "fall"
+  } else if (cafe$month[i] == "November") {
+    cafe$season[i] = "fall"
+  } else if (cafe$month[i] == "December") {
+    cafe$season[i] = "fall"
+  }
+  else
+    cafe$season[i] = "winter"
+}
+
+# Same but simple code for the season
+for (i in 1:nrow(cafe)) {
+  if(cafe$month[i] == "December"|cafe$month[i] == "January"|
+     cafe$month[i] == "February") {
+    cafe$season[i] = "winter"
+  } else if(cafe$month[i] == "March"|cafe$month[i] == "April"|
+            cafe$month[i] == "May") {
+    cafe$season[i] = "spring"
+  } else if(cafe$month[i] == "June"|cafe$month[i] == "July"|
+            cafe$month[i] == "August") {
+    cafe$season[i] = "summer"
+  } else
+    cafe$season[i] = "fall"
+}
+
+# See the data by season
+table(cafe$season)
+
+
+# Check
+str(cafe)
+```
+
+## Visualization
+
+```{r}
+library(ggplot2)
+head(iris)
+iris |> ggplot(aes(x=Sepal.Length, y=Sepal.Width)) + geom_point()
+
+#geom_text()
+iris |> ggplot(aes(x=Sepal.Length, y=Sepal.Width, label = Species)) +
+  geom_point() + geom_text(size = 3, hjust = 0, nudge_x = 0.05)
+
+#different expression
+base = base2 = iris |> ggplot(aes(x=Sepal.Length, y=Sepal.Width)) + geom_point() 
+# x axis reverse
+base + scale_x_reverse()
+# y axis reverse
+base + scale_y_reverse()
+# x axis from 0 to 10
+base + xlim(0,10)
+# y axis from 0 to 5
+base + ylim(0, 5)
+
+base + labs(title = "Iris Scatter Plot") +
+  theme(
+    plot.title = element_text(size = rel(2)),
+    axis.line.x.bottom = element_line(color = "black"),
+    axis.line.y.left = element_line(color = "black")) 
+
+
+```
+
+```{r}
+sample = data.frame(x = round(rnorm(3, 50, 10), 0),
+                    y = round(rnorm(3, 57, 3), 0),
+                    category = c("a", "b", "c"))
+
+sample |> ggplot(aes(x = x, y = y)) +
+  geom_line(size = 1, color = "#20639B") + geom_point()
+```
+
+### Visualize Cafe Data
+
+```{r}
+cafe
+target = data.frame(table(cafe$category))
+
+#visualization
+# by category
+target |> ggplot(aes(x = Var1, y = Freq)) +
+  geom_col() +
+  geom_text(label = paste0("total:", target$Freq), nudge_y = 1000)
+
+# by month sales
+cafe$date_ym = format(cafe$order_date, "%Y-%m")
+target = data.frame(table(cafe$date_ym))
+target_12 = tail(target, 12) #Recent 12 month data
+target_12 |> ggplot(aes(x= Var1, y = Freq, group = 1)) +
+  geom_line(size = 1, color = "#000000",
+            linetype = 3)
+
+# recent 12 month data visualization with ggplot2
+tail(target, 12) |> ggplot(aes(x = Var1, y = Freq, group = 1)) +
+  geom_line(size = 1, color = "#000000", linetype = 3) +
+  geom_point(color = "#173F5F") +
+  geom_text(aes(label = Freq), nudge_y = 200, size = 3) 
+
+# by day of the week
+target = data.frame(table(cafe$weekday))
+target$Var1 = factor(target$Var1, 
+                     levels = c("Monday", "Tuesday", "Wednesday",
+                                "Thursday", "Friday", "Saturday",
+                                "Sunday"))
+target = target[order(target$Var1),]
+target$por = target$Freq/sum(target$Freq)*100 #proportion
+target |> ggplot(aes(x="", y=por, fill = Var1)) +
+  geom_col()
+
+target |> ggplot(aes(x = "", y = por, fill = Var1)) +
+  geom_col() +
+  coord_polar(theta = "y")
+
+target |> ggplot(aes(x = "", y = por, fill = Var1)) +
+  geom_col() +
+  coord_polar(theta = "y") + 
+  geom_text(aes(label = paste0(Var1, "\n", round(por, 2), "%")),
+            position = position_stack(vjust = 0.5), size = 2.5)
+
+target |> ggplot(aes(x = "", y = por, fill = Var1)) +
+  geom_col() +
+  coord_polar(theta = "y") + 
+  geom_text(aes(label = paste0(round(por, 2), "%")),
+            position = position_stack(vjust = 0.5), size = 2.5,
+            col = "white") +
+  scale_fill_manual(values = c("#000000", "#222222", "#444444", 
+                               "#666666", "#888888", "#999999")) +
+  theme(legend.position = "none",
+        panel.background = element_blank(),
+        axis.text = element_blank(),
+        axis.title = element_blank(),
+        axis.ticks = element_blank())
+```
+
+### The effect of the advertisement
+
+```{r}
+library(readr)
+library(dplyr)
+adver = read_xlsx("~/Desktop/jieun/R/R practice/data/abtest.xlsx")
+head(adver)
+table(adver$city1) 
+
+head(adver)
+tail(adver)
+table(is.na(adver$city1))
+table(is.na(adver$city2))
+table(is.na(adver$age))
+table(is.na(adver$sex))
+table(is.na(adver$type))
+table(is.na(adver$open))
+table(is.na(adver$click))
+table(is.na(adver$conversion))
+table(is.na(adver$sales))
+
+adver = adver[adver$sales != "NA",] # remove the character "NA"
+adver
+str(adver$sales)
+adver$sales = as.numeric(adver$sales) # sales sould be changed to numerical variable
+str(adver$sales)
+
+unique(adver$city1)
+unique(adver$city2)
+unique(adver$age)
+unique(adver$sex)
+unique(adver$type)
+
+# see the numerical data
+summary(adver$open)
+summary(adver$click)
+summary(adver$conversion)
+summary(adver$sales)
+```
+
+### Analysis by map
+
+```{r}
+install.packages("raster")
+library(raster)
+
+korea = getData(name = "GADM", country = "kor", level = 0)
+korea_sido = getData(name = "GADM", country = "kor", level = 1)
+korea_sigungu = getData(name = "GADM", country = "kor", level = 2)
+
+korea$GID_0
+korea$NAME_0
+
+korea_sido$NAME_1
+korea_sido$VARNAME_1
+korea_sido$NL_NAME_1
+korea_sido$TYPE_1
+korea_sido$ENGTYPE_1
+korea_sido$HASC_1
+
+seoul = korea_sigungu[korea_sigungu$NAME_1 == "Seoul",]
+seoul$GID_2
+seoul$NAME_2
+seoul$NL_NAME_2
+seoul$TYPE_2
+seoul$ENGTYPE_2
+
+p1 = korea |> ggplot() +
+  geom_polygon(aes(x = long, y = lat, group = group),
+               fill = "white", color = "black") +
+  labs(title = "KOREA") +
+  theme(axis.ticks = element_blank(),
+        axis.title = element_blank(),
+        axis.text = element_blank())
+
+p2 = korea_sido |> ggplot() +
+  labs(title = "Sido") +
+  geom_polygon(aes(x = long, y = lat, group = group),
+               fill = "white", color = "black") +
+  theme(axis.ticks = element_blank(),
+        axis.title = element_blank(),
+        axis.text = element_blank())
+
+p3 = korea_sigungu |> ggplot() +
+  labs(title = "Sigungu") +
+  geom_polygon(aes(x = long, y = lat, group = group),
+               fill = "white", color = "black") +
+  theme(axis.ticks = element_blank(),
+        axis.title = element_blank(),
+        axis.text = element_blank())
+```
+
+### T-test and hypothesis test
+
+H0) There is mean difference between A and B group
+
+H1) There is no mean difference between A and B group
+
+```{r}
+adver |> ggplot(aes(x = type, y = open)) +
+  geom_boxplot() +
+  labs(title = "numter of opening email") +
+  theme(title = element_text(size = 15, face = "bold"),
+        axis.ticks = element_blank(),
+        axis.title = element_blank(),
+        axis.text = element_blank())
+
+adver |> ggplot(aes(x = type, y = click)) +
+  geom_boxplot() +
+  labs(title = "numter of clicking advertisement") +
+  theme(title = element_text(size = 15, face = "bold"),
+        axis.ticks = element_blank(),
+        axis.title = element_blank(),
+        axis.text = element_blank())
+
+adver |> ggplot(aes(x = type, y = conversion)) +
+  geom_boxplot() +
+  labs(title = "numter of conversion to purchase") +
+  theme(title = element_text(size = 15, face = "bold"),
+        axis.ticks = element_blank(),
+        axis.title = element_blank(),
+        axis.text = element_blank())
+
+A_GROUP = subset.data.frame(x = adver, subset = c(type == "A_GROUP"))
+B_GROUP = subset.data.frame(x = adver, subset = c(type == "B_GROUP"))
+
+# Normality Test
+#H0) A_GROUP has normal distribution
+#H1) A_GROUP has non-normal distribution
+install.packages("nortest")
+library(nortest)
+ad.test(A_GROUP$open)
+ad.test(B_GROUP$open)
+
+ad.test(A_GROUP$click)
+ad.test(B_GROUP$click)
+
+ad.test(A_GROUP$conversion)
+ad.test(B_GROUP$conversion)
+
+library(car)
+leveneTest(y = adver$open, group = factor(adver$type))
+leveneTest(y = adver$click, group = factor(adver$type))
+leveneTest(y = adver$conversion, group = factor(adver$type))
+
+#T-test
+t.test(A_GROUP$open, B_GROUP$open) #there is no difference between two groups for the number of opening the email 
+
+t.test(A_GROUP$click, B_GROUP$click)
+t.test(A_GROUP$conversion, B_GROUP$conversion)
+```
+
+### ggplot2
+
+```{r}
+kyungki = subset.data.frame(x = adver, subset = c(city1 == "경기도"))
+kyungki_A = subset.data.frame(x = kyungki, subset = c(type == "A_GROUP"))
+kyungki_B = subset.data.frame(x = kyungki, subset = c(type == "B_GROUP"))
+
+#Normality Test
+shapiro.test(kyungki_A$open)
+shapiro.test(kyungki_B$open)
+
+shapiro.test(kyungki_A$click)
+shapiro.test(kyungki_B$click)
+
+shapiro.test(kyungki_A$conversion)
+shapiro.test(kyungki_B$conversion)
+
+#Homoscedasticity Test
+library(car)
+leveneTest(y = kyungki$open, group = factor(kyungki$type))
+leveneTest(y = kyungki$click, group = factor(kyungki$type))
+leveneTest(y = kyungki$conversion, group = factor(kyungki$type))
+wilcox.test(open ~ type, kyungki)
+wilcox.test(click ~ type, kyungki)
+wilcox.test(conversion ~ type, kyungki)
+
+#visualization
+sido_key = data.frame(NAME_1 = korea_sido$NAME_1,
+                      KOR = c("부산광역시", "충청북도", "충청남도", "대구광역시",
+                              "대전광역시", "강원도", "광주광역시", "경기도",
+                              "경상북도", "경상남도", "인천광역시",
+                              "제주특별자치도", "전라북도", "전라남도",
+                              "세종특별자치시", "서울특별시", "울산광역시"),
+                      RESULT = 1)
+
+## Merge data
+korea_sido@data$id = rownames(korea_sido@data)
+korea_sido@data = merge(korea_sido@data, sido_key, by = "NAME_1")
+koreaDF = fortify(korea_sido)
+koreaDF = merge(koreaDF, korea_sido@data, by = "id")
+
+### ggplot 2
+ggplot() +
+  geom_polygon(data = koreaDF, aes(x = long, y = lat, group = group, fill = RESULT),
+               color = "black") +
+  labs(title = "Differences in performance for the two groups by region") +
+  theme(legend.position = "none",
+        axis.ticks = element_blank(),
+        axis.title = element_blank(),
+        axis.text = element_blank())
+  
+
+```
+
+## Chapter 7
+
+```{r}
+install.packages("quantmod")
+library(quantmod)
+
+KOSPI = getSymbols("^KS11", from = "2001-01-01", to = Sys.time(), auto.assign = FALSE)
+
+SEC = getSymbols("005930.KS", from = "2015-01-01",
+                 to = Sys.time(), auto.assign = FALSE)
+
+APPLE = getSymbols("AAPL", from = "2015-01-01",
+                 to = Sys.time(), auto.assign = FALSE)
+
+TESLA = getSymbols("TSLA", from = "2015-01-01",
+                   tp = Sys.time(), auto.assign = FALSE)
+
+
+quantmod::chartSeries(SEC)
+
+#Change the xts timeseries data to data frame
+str(KOSPI)
+str(SEC)
+sample = data.frame(date = time(KOSPI), KOSPI, growth = ifelse(Cl(KOSPI) > Op(KOSPI), "up",
+                                                               "down"))
+sample_samsung = data.frame(date = time(SEC), SEC, 
+                            growth = ifelse(Cl(SEC) > Op(SEC), "up", "down"))
+
+sample_apple = data.frame(date = time(APPLE), APPLE, 
+                            growth = ifelse(Cl(APPLE) > Op(APPLE), "up", "down"))
+
+sample_tesla = data.frame(date = time(TESLA), TESLA, 
+                            growth = ifelse(Cl(TESLA) > Op(TESLA), "up", "down"))
+
+#Change the column name to make it simple
+colnames(KOSPI)
+colnames(sample) = c("date", "Open", "High", "Low", "Close", "Volume", "Adjusted", "growth")
+colnames(sample_samsung) = c("date", "Open", "High", "Low", "Close", "Volume", "Adjusted", "growth")
+colnames(sample_apple) = c("date", "Open", "High", "Low", "Close", "Volume", "Adjusted", "growth")
+colnames(sample_tesla) = c("date", "Open", "High", "Low", "Close", "Volume", "Adjusted", "growth")
+
+sample
+summary(sample)
+
+sample |> ggplot(aes(x=date)) + geom_line(aes(y = Low))
+sample[sample$date >= "2020-01-01",] |> ggplot(aes(x = date)) + geom_line(aes(y = Low))
+
+#linerange() will mark high and low price
+sample[sample$date >= "2020-01-01",] |> ggplot(aes(x=date)) +
+  geom_linerange(aes(ymin = Low, ymax = High))
+
+#geom_rect()
+sample[sample$date >= "2020-01-01",] |> ggplot(aes(x=date)) +
+  geom_linerange(aes(ymin = Low, ymax = High)) +
+  geom_rect(aes(xmin = date - 0.3,
+                xmax = date + 0.3,
+                ymin = pmin(Open, Close),
+                ymax = pmax(Open, Close),
+                fill = growth)) +
+  guides(fill = "none") +
+  scale_fill_manual(values = c("down" = "blue", "up" = "red")) +
+  labs(
+    title = "KOSPI",
+    subtitle = "From 2020-01-01 to 2024-02-03"
+  ) +
+  theme(plot.title = element_text(face = "bold"),
+        plot.subtitle = element_text(hjust = 1),
+        axis.title = element_blank(),
+        axis.line.x.bottom = element_line(color = "grey"),
+        axis.ticks = element_line(color = "grey"),
+        axis.line.y.left = element_line(color = "grey"),
+        plot.background = element_rect(fill = "white"),
+        panel.background = element_rect(fill = "white"))
+
+sample|> ggplot(aes(x=date)) +
+  geom_linerange(aes(ymin = Low, ymax = High)) +
+  geom_rect(aes(xmin = date - 0.3,
+                xmax = date + 0.3,
+                ymin = pmin(Open, Close),
+                ymax = pmax(Open, Close),
+                fill = growth)) +
+  guides(fill = "none") +
+  scale_fill_manual(values = c("down" = "blue", "up" = "red")) +
+  labs(
+    title = "KOSPI",
+    subtitle = "From 2020-01-01 to 2024-02-03"
+  ) +
+  theme(plot.title = element_text(face = "bold"),
+        plot.subtitle = element_text(hjust = 1),
+        axis.title = element_blank(),
+        axis.line.x.bottom = element_line(color = "grey"),
+        axis.ticks = element_line(color = "grey"),
+        axis.line.y.left = element_line(color = "grey"),
+        plot.background = element_rect(fill = "white"),
+        panel.background = element_rect(fill = "white"))
+
+
+#SAMSUNG 
+sample_samsung |> ggplot(aes(x=date)) +
+  geom_linerange(aes(ymin = Low, ymax = High)) +
+  geom_rect(aes(xmin = date - 0.3,
+                xmax = date + 0.3,
+                ymin = pmin(Open, Close),
+                ymax = pmax(Open, Close),
+                fill = growth)) +
+  guides(fill = "none") +
+  scale_fill_manual(values = c("down" = "blue", "up" = "red")) +
+  labs(
+    title = "SAMSUNG",
+    subtitle = "From 2015-01-02 to 2024-02-03"
+  ) +
+  theme(plot.title = element_text(face = "bold"),
+        plot.subtitle = element_text(hjust = 1),
+        axis.title = element_blank(),
+        axis.line.x.bottom = element_line(color = "grey"),
+        axis.ticks = element_line(color = "grey"),
+        axis.line.y.left = element_line(color = "grey"),
+        plot.background = element_rect(fill = "white"),
+        panel.background = element_rect(fill = "white"))
+
+#APPLE
+sample_apple |> ggplot(aes(x=date)) +
+  geom_linerange(aes(ymin = Low, ymax = High)) +
+  geom_rect(aes(xmin = date - 0.3,
+                xmax = date + 0.3,
+                ymin = pmin(Open, Close),
+                ymax = pmax(Open, Close),
+                fill = growth)) +
+  guides(fill = "none") +
+  scale_fill_manual(values = c("down" = "blue", "up" = "red")) +
+  labs(
+    title = "APPLE",
+    subtitle = "From 2015-01-02 to 2024-02-03"
+  ) +
+  theme(plot.title = element_text(face = "bold"),
+        plot.subtitle = element_text(hjust = 1),
+        axis.title = element_blank(),
+        axis.line.x.bottom = element_line(color = "grey"),
+        axis.ticks = element_line(color = "grey"),
+        axis.line.y.left = element_line(color = "grey"),
+        plot.background = element_rect(fill = "white"),
+        panel.background = element_rect(fill = "white"))
+
+#TESLA
+sample_tesla |> ggplot(aes(x=date)) +
+  geom_linerange(aes(ymin = Low, ymax = High)) +
+  geom_rect(aes(xmin = date - 0.3,
+                xmax = date + 0.3,
+                ymin = pmin(Open, Close),
+                ymax = pmax(Open, Close),
+                fill = growth)) +
+  guides(fill = "none") +
+  scale_fill_manual(values = c("down" = "blue", "up" = "red")) +
+  labs(
+    title = "TESLA",
+    subtitle = "From 2015-01-02 to 2024-02-03"
+  ) +
+  theme(plot.title = element_text(face = "bold"),
+        plot.subtitle = element_text(hjust = 1),
+        axis.title = element_blank(),
+        axis.line.x.bottom = element_line(color = "grey"),
+        axis.ticks = element_line(color = "grey"),
+        axis.line.y.left = element_line(color = "grey"),
+        plot.background = element_rect(fill = "white"),
+        panel.background = element_rect(fill = "white"))
+
+```
+
+### Stat package
+
+```{r}
+library(quantmod)
+KOSPI_B = getSymbols("^KS11", from = "2001-01-01", 
+                   to = Sys.time(), 
+                   auto.assign = FALSE)
+
+str(KOSPI_B)
+colnames(KOSPI_B) = c("Open", "High", "Low", "Close", "Volume", "Adjusted")
+
+table(is.na(KOSPI_B))
+
+#Making the time-series data
+KOSPI_C = na.omit(KOSPI_B$Close)
+KOSPI_C = as.numeric(KOSPI_C)
+ts_KOSPI_C = ts(data = KOSPI_C, frequency = 365)
+
+#Additive and Multiplicative model
+de_data_add = decompose(ts_KOSPI_C, type = "additive")
+de_data_multi = decompose(ts_KOSPI_C, type = "multiplicative")
+
+str(de_data_add)
+str(de_data_multi)
+
+plot(de_data_add)
+plot(de_data_multi)
+```
+
+### forecast package
+
+```{r}
+KOSPI_NEW = getSymbols("^KS11", from = "2023-01-01", to ="2024-01-31", auto.assign = FALSE)
+head(KOSPI_NEW)
+
+KOSPI_NEW |> ggplot(aes(x = time(KOSPI_NEW), y = KS11.Close)) + geom_line()
+
+ts_data = ts(data = as.numeric(KOSPI_NEW$KS11.Close), frequency = 4)
+
+install.packages("forecast")
+library(forecast)
+fit_lm = tslm(ts_data ~ trend)
+fit_lm
+
+summary(fit_lm)
+
+KOSPI_NEW |> ggplot(aes(x = time(KOSPI_NEW), y = KS11.Close)) +
+  geom_line() +
+  geom_line(y = fit_lm$fitted.values, color = "grey")
+
+pred = data.frame(forecast(fit_lm, h = 20), stringsAsFactors = FALSE)
+pred |> ggplot(aes(x= index(pred), y = Point.Forecast)) +
+  geom_line() +
+  geom_ribbon(aes(ymin = Lo.95, ymax = Hi.95), alpha = 0.25) +
+  geom_ribbon(aes(ymin = Lo.80, ymax = Hi.80), alpha = 0.5)
+```
+
+```{r}
+ts_data_B = ts(data = as.numeric(KOSPI_NEW$KS11.Close), frequency = 12)
+fitted = tslm(ts_data_B ~ trend + season)
+fitted
+summary(fitted)
+
+KOSPI_NEW |> ggplot(aes(x = time(KOSPI_NEW), y = KS11.Close)) +
+  geom_line() +
+  geom_line(y = fitted$fitted.values, color = "grey")
+
+
+```
+
+```{r}
+t = time(ts_data_B)
+t.break = data.frame(t, ts_data_B)
+t.break[t.break$t < 3.65, ] = 0
+t.break[t.break$t > 3.75, ] = 0
+tb1 = ts(t.break$t, frequency = 20)
+
+fit.t = tslm(ts_data_B ~ t)
+AIC(fit.t)
+
+fit.tb = tslm(ts_data_B ~ t + I(t^2) + I(t^3) + I(tb1^3))
+AIC(fit.tb)
+
+ts_data_B |> ggplot(aes(x = time(ts_data_B))) +
+  geom_line(aes(y = ts_data)) +
+  geom_line(aes(y = fit.t$fitted.values),
+            color = "yellow", size = 1) +
+  geom_line(aes(y = fit.tb$fitted.values), 
+            color = "blue") +
+    guides(fill = "none") +
+  labs(
+    title = "Time-series regression model",
+    subtitle = "From 2023-01-01 to 2024-01-31"
+  ) +
+  theme(plot.title = element_text(face = "bold"),
+        plot.subtitle = element_text(hjust = 1),
+        axis.title = element_blank(),
+        axis.line.x.bottom = element_line(color = "grey"),
+        axis.ticks = element_line(color = "grey"),
+        axis.line.y.left = element_line(color = "grey"),
+        plot.background = element_rect(fill = "white"),
+        panel.background = element_rect(fill = "white"))
+
+new = data.frame(t = t[length(t)] + seq(1, by=0.05, length.out = 20))
+forecast(fit.t, newdata = new)
+```
+
+### Unit Root Test
+
+```{r}
+install.packages("urca")
+library(urca)
+ts_kospi = ts(as.numeric(KOSPI_NEW$KS11.Close), frequency = 20)
+
+ur_test = ur.kpss(ts_kospi)
+summary(ur_test)
+
+#Since test-statistic is 0.8152 it is bigger than 0.05 and it needs differencing
+dif_1 = diff(ts_kospi, differences = 1)
+ur_test_2 = ur.kpss(dif_1)
+summary(ur_test_2)
+
+#One more differencing since test-statistic is 0.1912 > 0.05
+dif_2 = diff(ts_kospi, differences = 2)
+ur_test_3 = ur.kpss(dif_2)
+summary(ur_test_3)
+
+#If one more differencing is needed then we can use log transformation
+log_dif_2 = diff(log(ts_kospi), differences = 2)
+ur_test_4 = ur.kpss(log_dif_2)
+summary(ur_test_4)
+```
+
+### auto.arima
+
+```{r}
+library(ggplot2)
+ts_kospi |> ggplot(aes(x = time(ts_kospi))) +
+  geom_line(aes(y = ts_kospi))
+
+
+library(forecast)
+fit_a = auto.arima(ts_kospi)
+fit_a
+checkresiduals(fit_a)
+```
+
+## Chapter 8. News keyword analysis
+
+```{r}
+library(httr)
+news = GET(url = "https://openapi.naver.com/v1/search/news.json",
+           add_headers("X-Naver-Client-Id" = cID,
+                       "X-Naver-Client-Secret" = cSec),
+           query = list(query = "Madrid",
+                        display = 100,
+                        start = 1,
+                        sort = "date"))
+
+content(news)$total
+
+install.packages("rJava")
+library(rJava)
+source("https://install-github.me/talgalili/installr")
+installr::install.java()
+
+install.packages("remote")
+library(remote)
+remotes::install_github("haven-jeon/KoNLP",
+                        upgrade = "never",
+                        INSTALL_opts = c("--no-multiarch"))
+library(KoNLP)
+
+```
+
+### News about electric car
+
+```{r}
+library(httr)
+url = "https://openapi.naver.com/v1/search/news.json"
+sample_news = GET(url = url,
+                  add_headers("X-Naver-Client-Id" = cID,
+                              "X-Naver-Client-Secret" = cSEC),
+                  query = list(query = "전기자동차",
+                               display = 1,
+                               start = 1,
+                               sort = "date"))
+content(sample_news)$total
+
+#Creating empty data.frame
+all_news = data.frame()
+all_news
+
+URL = "https://openapi.naver.com/v1/search/news.json"
+search = "전기자동차"
+for(i in 1:10){
+  param = list(query = search,
+               display = 100,
+               start = i,
+               sort = "date")
+  
+  news = GET(url = URL,
+             add_headers("X-Naver-Client-Id" = cID,
+                         "X-Naver-Client-Secret" = cSEC),
+             query = param)
+  
+  body = data.frame(t(sapply(content(news)$item, data.frame)))
+  all_news = rbind(all_news, body)
+  Sys.sleep(0.1)
+}
+
+
+all_news 
+
+#print only the title
+all_news$title[1:10]
+pat = "<b>|</b>|&quot;"
+rep = ""
+title = gsub(pattern = pat, replacement = rep, x = all_news$title)
+
+#different way to remove the words
+pat2 <- c(
+  "<b>",
+  "</b>",
+  "&quot;",
+  "1", 
+  "150", 
+  "10",
+  "1.5",
+  "12",
+  "137",
+  "11",
+  "100",
+  "14"
+)
+
+wrong_labels_pat2 <- paste0(pat2, collapse = "|")
+wrong_labels_pat2
+
+library(dplyr)
+library(stringr)
+all_news_semi_cleaned <-
+  all_news %>%
+  mutate(
+    title = str_replace_all(string = title, pattern = wrong_labels_pat2, 
+                            replacement = "")
+  ) 
+
+head(all_news_semi_cleaned, 10)
+
+install.packages("tidytext")
+library(tidytext)
+
+title = tibble(text = all_news_semi_cleaned$title)
+
+noun_list = title |> unnest_tokens(word, text)
+tb_noun = table(noun_list)
+length(tb_noun)
+head(tb_noun)
+
+df_noun = data.frame(tb_noun)
+top10_noun = head(df_noun, 10)
+
+ggplot(top10_noun) + geom_bar(aes(x = reorder(word, -Freq), y = Freq), stat = "identity")
+
+str(df_noun)
+df_noun$word = as.character(df_noun$word)
+df_noun = df_noun[nchar(df_noun$word) > 1,]
+top10_noun = head(df_noun, 10)
+
+top10_noun |> ggplot() + geom_bar(aes(x=reorder(word, -Freq), y=Freq), stat = "identity")
+```
+
+### word cloud
+
+```{r}
+install.packages("wordcloud")
+library(wordcloud)
+library(RcolorBrewer)
+
+remove_word = c(
+  "<b>",
+  "</b>",
+  "&quot;",
+  "Q&amp;A"
+  )
+remove_word = paste0(remove_word, collapse = "|")
+
+title = all_news_semi_cleaned |>  mutate(title = str_replace_all(string = title, pattern = remove_word, replacement = ""))
+head(title, 10)
+
+title = tibble(text = all_news_semi_cleaned$title)
+noun_list = title |> unnest_tokens(word, text)
+tb_noun = table(noun_list)
+df_noun = data.frame(tb_noun)
+
+wordcloud(words = df_noun$word,
+          freq = df_noun$Freq)
+
+wordcloud(words = df_noun$word,
+          freq = df_noun$Freq,
+          random.order = FALSE,
+          min.freq = 20,
+          colors = brewer.pal(8, "Dark2"))
+
+#wordcloud2 package
+install.packages("wordcloud2")
+library(wordcloud2)
+wordcloud2(data = df_noun,
+           color = "random-dark",
+           shape = "circle",
+           fontFamily = "Arial",
+           fontWeight = 550,
+           size = 2,
+           widgetsize = c(900, 500))
+
+letterCloud(data = df_noun, "R", wordSize = 1)
+
+#Analysis by graph
+all_news = data.frame()
+all_news
+
+URL = "https://openapi.naver.com/v1/search/news.json"
+search = "전기자동차"
+for(i in 1:10){
+  param = list(query = search,
+               display = 100,
+               start = i,
+               sort = "sim")
+  
+  news = GET(url = URL,
+             add_headers("X-Naver-Client-Id" = cid,
+                         "X-Naver-Client-Secret" = cSec),
+             query = param)
+  
+  body = data.frame(t(sapply(content(news)$item, data.frame)))
+  all_news = rbind(all_news, body)
+  Sys.sleep(0.1)
+}
+
+format(Sys.time(), "%Y-%m-%d %a")
+Sys.setlocale(category = "LC_TIME",
+              locale = "C")
+all_news$pubDate = as.Date(unlist(all_news$pubDate), "%a, %d %b %Y")
+
+ggplot(all_news, aes(x=pubDate)) +
+  geom_line(stat = "count", color = "#EEEEEE", size = 1.5) +
+  geom_text(aes(label = ..count..),
+            stat = "count",
+            position = position_nudge(y = 150)) +
+  labs(title = "Electric Car News Trend") +
+  xlab("date") +
+  ylab("") +
+  scale_x_date(date_labels = "%m-%d") +
+  theme(text = element_text(size = 15),
+        panel.background = element_blank(),
+        axis.ticks = element_blank(),
+        title = element_text(size = 13, face = "bold"))
+
+top = data.frame(1:10)
+for(i in 1:length(unique(all_news$pubDate))){
+   sub_news = all_news[all_news$pubDate==sort(unique(all_news$pubDate))[i],] +   
+   df_target = data.frame(table(unlist(strsplit(sub_news$title, " "))))
+   df_target = df_target[order(df_target$Freq, decreasing = TRUE),]
+   df_target$Var1 = as.character(df_target$Var1)
+   df_target = df_target[nchar(df_target$Var1) > 1,]
+
+   top10 = head(df_target, 10)
+
+   top = cbind(top, top10)
+}
+
+```
+
+## Chapter 9. YouTube comment analysis (sentiment analysis)
+
+```{r}
+install.packages("tuber")
+library(tuber)
+
+yt_oauth(app_id = app_id,
+         app_secret = app_secret,
+         token = "")
+
+youtuber = data.frame(channel = c("deemd 딤디",
+                                  "뜬뜬 DdeunDdeun"),
+                      channel_id = c("UCrFlv9c4LItVlIMCC2p6LOg",
+                                     "UCDNvRZRgvkBTUkQzFoT_8rA"))
+
+youtuber_1 = get_channel_stats(channel_id = "UCrFlv9c4LItVlIMCC2p6LOg")
+yt1_status = data.frame(channel = "deemd 딤디", youtuber_1$statistics)
+
+youtuber_2 = get_channel_stats(channel_id = "UCDNvRZRgvkBTUkQzFoT_8rA")
+yt2_status = data.frame(channel = "뜬뜬 DdeunDdeun", youtuber_2$statistics)
+
+yt_status = rbind(yt1_status, yt2_status)
+yt_status
+
+library(ggplot2)
+ggplot(yt_status, aes(x = channel, fill = channel)) +
+  geom_bar(aes(y = viewCount), stat = "identity") +
+  geom_text(aes(label = paste0(format(viewCount, big.mark = ","), "View"),
+                y = viewCount), stat = "identity", vjust = -0.5) +
+  labs(title = "view numbers by channels") +
+  xlab("") + ylab("") +
+  theme(text = element_text(size = 15),
+        panel.background = element_blank(),
+        legend.position = "none",
+        axis.ticks = element_blank(),
+        axis.text.y = element_blank())
+
+ggplot(yt_status, aes(x = channel, fill = channel)) +
+  geom_bar(aes(y = subscriberCount), stat = "identity") +
+  geom_text(aes(label = paste0(format(subscriberCount, big.mark = ","), "View"),
+                y = subscriberCount), stat = "identity", vjust = -0.5) +
+  labs(title = "subscribers number by channels") +
+  xlab("") + ylab("") +
+  theme(text = element_text(size = 15),
+        panel.background = element_blank(),
+        legend.position = "none",
+        axis.ticks = element_blank(),
+        axis.text.y = element_blank())
+
+yt_status$subscriberCount = as.numeric(yt_status$subscriberCount)
+yt_status$viewCount = as.numeric(yt_status$viewCount)
+yt_status$videoCount = as.numeric(yt_status$videoCount)
+
+library(dplyr)
+if_else(yt_status[1,3] > yt_status[2,3], 
+                     "yes", "no")
+
+#Contents number by channels
+yt_status |> ggplot(aes(x = channel, fill = channel)) +
+  geom_bar(aes(y = videoCount), stat = "identity") +
+  geom_text(aes(label = paste0(format(videoCount, big.mark = ","), "View"),
+                y = videoCount), stat = "identity", vjust = -0.5) +
+  labs(title = "Contents number by channels") + 
+  xlab("") + ylab("") +
+  theme(text = element_text(size = 15),
+        panel.background = element_blank(),
+        legend.position = "none",
+        axis.ticks = element_blank(),
+        axis.text.y = element_blank(),
+        title = element_text(face = "bold"),
+        plot.title = element_text(hjust = 0.5))
+
+mstVideo1 = get_stats(video_id = "JuOCKHbQqqg")
+mstVideo1
+mstv1df = data.frame(title = "deemed", mstVideo1)
+
+mstVideo2 = get_stats(video_id = "HGHqzCuWjAw")
+mstVideo2
+mstv2df = data.frame(title = "DdeunDdeun", mstVideo2)
+
+mstvdf = rbind(mstv1df, mstv2df)
+str(mstvdf)
+mstvdf[-1]
+
+mstvdf$viewCount = as.numeric(mstvdf$viewCount)
+mstvdf$likeCount = as.numeric(mstvdf$likeCount)
+mstvdf$commentCount = as.numeric(mstvdf$commentCount)
+
+ggplot(mstvdf, aes(x=title, fill=title)) +
+  geom_bar(aes(y = viewCount), stat="identity") +
+  geom_text(aes(label = format(viewCount, big.mark = ","), 
+                y = viewCount), stat = "identity", vjust = -0.5) +
+  xlab("") + ylab("") + 
+  labs(title = "Viewcounts by channel") +
+  theme(text = element_text(size = 15),
+        panel.background = element_blank(),
+        legend.position = "none",
+        axis.ticks = element_blank(),
+        axis.text.y = element_blank())
+
+#like
+ggplot(mstvdf, aes(x=title, fill=title)) +
+  geom_bar(aes(y=likeCount), stat="identity") +
+  geom_text(aes(label = format(likeCount, big.mark=","),
+                y = likeCount), stat="identity", vjust = -0.5) +
+  labs(title = "Likecount by channel") +
+  xlab("") + ylab("") +
+  theme(text = element_text(size = 15),
+        panel.background = element_blank(),
+        legend.position = "none",
+        axis.ticks = element_blank(),
+        axis.line.y = element_blank(),
+        title = element_text(face = "bold"),
+        plot.title = element_text(hjust = 0.5))
+
+#comment
+ggplot(mstvdf, aes(x=title, fill=title)) +
+  geom_bar(aes(y=commentCount), stat="identity") +
+  geom_text(aes(label = format(commentCount, big.mark=","),
+                y = commentCount), stat="identity", vjust = -0.5) +
+  labs(title = "CommentCount by channel") +
+  xlab("") + ylab("") +
+  theme(text = element_text(size = 15),
+        panel.background = element_blank(),
+        legend.position = "none",
+        axis.ticks = element_blank(),
+        axis.line.y = element_blank(),
+        title = element_text(face = "bold"),
+        plot.title = element_text(hjust = 0.5))
+
+#comment collection
+cmt_1 = get_all_comments(video_id = "JuOCKHbQqqg")
+cmt_2 = get_all_comments(video_id = "HGHqzCuWjAw")
+
+nrow(cmt_1)
+nrow(cmt_2)
+```
+
+### RcppMecab Package
+
+```{r}
+
+```
