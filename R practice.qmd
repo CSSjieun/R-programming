@@ -1024,3 +1024,143 @@ for(i in 1:length(unique(all_news$pubDate))){
 }
 
 ```
+
+## Chapter 9. YouTube comment analysis (sentiment analysis)
+
+```{r}
+install.packages("tuber")
+library(tuber)
+
+yt_oauth(app_id = app_id,
+         app_secret = app_secret,
+         token = "")
+
+youtuber = data.frame(channel = c("deemd 딤디",
+                                  "뜬뜬 DdeunDdeun"),
+                      channel_id = c("UCrFlv9c4LItVlIMCC2p6LOg",
+                                     "UCDNvRZRgvkBTUkQzFoT_8rA"))
+
+youtuber_1 = get_channel_stats(channel_id = "UCrFlv9c4LItVlIMCC2p6LOg")
+yt1_status = data.frame(channel = "deemd 딤디", youtuber_1$statistics)
+
+youtuber_2 = get_channel_stats(channel_id = "UCDNvRZRgvkBTUkQzFoT_8rA")
+yt2_status = data.frame(channel = "뜬뜬 DdeunDdeun", youtuber_2$statistics)
+
+yt_status = rbind(yt1_status, yt2_status)
+yt_status
+
+library(ggplot2)
+ggplot(yt_status, aes(x = channel, fill = channel)) +
+  geom_bar(aes(y = viewCount), stat = "identity") +
+  geom_text(aes(label = paste0(format(viewCount, big.mark = ","), "View"),
+                y = viewCount), stat = "identity", vjust = -0.5) +
+  labs(title = "view numbers by channels") +
+  xlab("") + ylab("") +
+  theme(text = element_text(size = 15),
+        panel.background = element_blank(),
+        legend.position = "none",
+        axis.ticks = element_blank(),
+        axis.text.y = element_blank())
+
+ggplot(yt_status, aes(x = channel, fill = channel)) +
+  geom_bar(aes(y = subscriberCount), stat = "identity") +
+  geom_text(aes(label = paste0(format(subscriberCount, big.mark = ","), "View"),
+                y = subscriberCount), stat = "identity", vjust = -0.5) +
+  labs(title = "subscribers number by channels") +
+  xlab("") + ylab("") +
+  theme(text = element_text(size = 15),
+        panel.background = element_blank(),
+        legend.position = "none",
+        axis.ticks = element_blank(),
+        axis.text.y = element_blank())
+
+yt_status$subscriberCount = as.numeric(yt_status$subscriberCount)
+yt_status$viewCount = as.numeric(yt_status$viewCount)
+yt_status$videoCount = as.numeric(yt_status$videoCount)
+
+library(dplyr)
+if_else(yt_status[1,3] > yt_status[2,3], 
+                     "yes", "no")
+
+#Contents number by channels
+yt_status |> ggplot(aes(x = channel, fill = channel)) +
+  geom_bar(aes(y = videoCount), stat = "identity") +
+  geom_text(aes(label = paste0(format(videoCount, big.mark = ","), "View"),
+                y = videoCount), stat = "identity", vjust = -0.5) +
+  labs(title = "Contents number by channels") + 
+  xlab("") + ylab("") +
+  theme(text = element_text(size = 15),
+        panel.background = element_blank(),
+        legend.position = "none",
+        axis.ticks = element_blank(),
+        axis.text.y = element_blank(),
+        title = element_text(face = "bold"),
+        plot.title = element_text(hjust = 0.5))
+
+mstVideo1 = get_stats(video_id = "JuOCKHbQqqg")
+mstVideo1
+mstv1df = data.frame(title = "deemed", mstVideo1)
+
+mstVideo2 = get_stats(video_id = "HGHqzCuWjAw")
+mstVideo2
+mstv2df = data.frame(title = "DdeunDdeun", mstVideo2)
+
+mstvdf = rbind(mstv1df, mstv2df)
+str(mstvdf)
+mstvdf[-1]
+
+mstvdf$viewCount = as.numeric(mstvdf$viewCount)
+mstvdf$likeCount = as.numeric(mstvdf$likeCount)
+mstvdf$commentCount = as.numeric(mstvdf$commentCount)
+
+ggplot(mstvdf, aes(x=title, fill=title)) +
+  geom_bar(aes(y = viewCount), stat="identity") +
+  geom_text(aes(label = format(viewCount, big.mark = ","), 
+                y = viewCount), stat = "identity", vjust = -0.5) +
+  xlab("") + ylab("") + 
+  labs(title = "Viewcounts by channel") +
+  theme(text = element_text(size = 15),
+        panel.background = element_blank(),
+        legend.position = "none",
+        axis.ticks = element_blank(),
+        axis.text.y = element_blank())
+
+#like
+ggplot(mstvdf, aes(x=title, fill=title)) +
+  geom_bar(aes(y=likeCount), stat="identity") +
+  geom_text(aes(label = format(likeCount, big.mark=","),
+                y = likeCount), stat="identity", vjust = -0.5) +
+  labs(title = "Likecount by channel") +
+  xlab("") + ylab("") +
+  theme(text = element_text(size = 15),
+        panel.background = element_blank(),
+        legend.position = "none",
+        axis.ticks = element_blank(),
+        axis.line.y = element_blank(),
+        title = element_text(face = "bold"),
+        plot.title = element_text(hjust = 0.5))
+
+#comment
+ggplot(mstvdf, aes(x=title, fill=title)) +
+  geom_bar(aes(y=commentCount), stat="identity") +
+  geom_text(aes(label = format(commentCount, big.mark=","),
+                y = commentCount), stat="identity", vjust = -0.5) +
+  labs(title = "CommentCount by channel") +
+  xlab("") + ylab("") +
+  theme(text = element_text(size = 15),
+        panel.background = element_blank(),
+        legend.position = "none",
+        axis.ticks = element_blank(),
+        axis.line.y = element_blank(),
+        title = element_text(face = "bold"),
+        plot.title = element_text(hjust = 0.5))
+
+#comment collection
+cmt_1 = get_all_comments(video_id = "JuOCKHbQqqg")
+cmt_2 = get_all_comments(video_id = "HGHqzCuWjAw")
+
+nrow(cmt_1)
+nrow(cmt_2)
+```
+
+### RcppMecab Package
